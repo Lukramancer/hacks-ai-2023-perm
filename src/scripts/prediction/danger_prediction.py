@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# coding: utf-8
+#!/usr/bin/env python3
 
 
 import pandas as pd
@@ -9,22 +8,49 @@ import os
 from catboost import CatBoostClassifier
 from src.scripts.correct_data.correct_MO_to_stations import correct_MO_to_stations
 
+from env import DATABASE
 
-# # Load data
 
-# загружаем данные и убираем лишние пробелы до и после слова
-
-def get_prediction():
-    respective_weather_df = pd.read_csv('../Данные/Данные по метеостанциям. Соответствие МО.csv')
+def get_respective_weather_df_from_csv():
+    respective_weather_df = pd.read_csv('../../../Данные/Данные по метеостанциям. Соответствие МО.csv')
     respective_weather_df.replace('^\s+', '', regex=True, inplace=True)
     respective_weather_df.replace('\s+$', '', regex=True, inplace=True)
+    return respective_weather_df
+
+
+def get_respective_weather_df_from_sql():
+    respective_weather_df_from_db = pd.read_sql("districts", DATABASE, columns=["name", "raw_meteorology_station_name"])
+    respective_weather_df_from_db.rename(columns={"name": "Муниципальное образование",
+                                                  "raw_meteorology_station_name": "Метеорологическая станция"},
+                                         inplace=True)
+    return respective_weather_df_from_db
+
+
+def get_weather_stats_df_from_csv():
+    return pd.read_csv("../.././Данные/Данные по метеостанциям.csv", low_memory=False)
+
+
+def get_weather_stats_df_from_sql():
+    weather_stats_df = pd.read_sql("weather", DATABASE)
+
+    weather_stats_df.insert(0, "Местное время", weather_stats_df["time"].dt.strftime("%d.%m.%Y %H:%M"))
+    weather_stats_df.drop(columns=["time"], inplace=True)
+    return weather_stats_df
+
+
+def get_prediction():
+    # # Load data
+
+    # загружаем данные и убираем лишние пробелы до и после слова
+    respective_weather_df = get_respective_weather_df_from_sql()
 
     # переводим МО в название метеостанции которая отвечает за этот округ
-
     MO_to_weather_station = dict(respective_weather_df.values)
     MO_to_weather_station = {x: y.split()[1] for x, y in MO_to_weather_station.items()}
 
-    weather_stats_df = pd.read_csv("../Данные/Данные по метеостанциям.csv", low_memory=False)
+    # weather_stats_df = pd.read_csv("../.././Данные/Данные по метеостанциям.csv", low_memory=False)
+    weather_stats_df = get_weather_stats_df_from_sql()
+
     weather_stats_df.replace('^\s+', '', regex=True, inplace=True)
     weather_stats_df.replace('\s+$', '', regex=True, inplace=True)
     weather_stats_df.meteostation = weather_stats_df.meteostation.str.replace("й", "й")  # ненавижу
@@ -121,9 +147,7 @@ def get_prediction():
 
 def edit_submit_df(submit_df: pd.DataFrame):
     result_df = []
-    districts = correct_MO_to_stations(dict(pd.read_csv("../Данные/Данные по метеостанциям. Соответствие МО.csv")
-                                            .replace('\s+$', '', regex=True)
-                                            .replace('^\s+', '', regex=True).values))
+    districts = correct_MO_to_stations(dict(get_respective_weather_df_from_sql().values))
     for x, y in districts.items():
         selected_df = submit_df[submit_df["meteostations"] == y].copy()
         selected_df["district"] = x
