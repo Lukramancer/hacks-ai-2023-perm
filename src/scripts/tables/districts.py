@@ -17,14 +17,19 @@ def get_possible_districts():
 def get_osm_id(district_name: str, possible_districts: list[Element]) -> int | None:
     osm_id = None
 
-    expanded_name: str = district_name.replace("МО", "муниципальный округ").replace("ГО", "городской округ")
+    expanded_name: str = district_name.replace(" город", '')\
+        .replace("МО", "муниципальный округ")\
+        .replace("ГО", "городской округ")
     for element in possible_districts:
         if expanded_name in element.tag("name").replace('ё', 'е'):
             osm_id = element.id()
             break
 
     if osm_id is None:
-        shortened_name: str = district_name.replace("МО", '').replace("ГО", '').strip().split()[1]
+        shortened_name: str = district_name.replace(" город", '')\
+            .replace("МО", '')\
+            .replace("ГО", '')\
+            .strip().split()[1]
         for element in possible_districts:
             if shortened_name in element.tag("name").replace('ё', 'е'):
                 osm_id = element.id()
@@ -61,7 +66,7 @@ def main():
         return
 
     parsed_districts = list[District]()
-    with open("../../../Данные/Данные по метеостанциям. Соответствие МО.csv") as input_table_file:
+    with open("./Данные/Данные по метеостанциям. Соответствие МО.csv") as input_table_file:
         table_reader = csv_reader(input_table_file, delimiter=',')
         table_header = next(table_reader)
         for district_name, raw_meteorology_station_name in table_reader:
@@ -82,10 +87,8 @@ def main():
                                              raw_meteorology_station_name=raw_meteorology_station_name,
                                              meteorology_station_name=meteorology_station_name, geometry=geometry))
 
-    commit_districts(parsed_districts, DATABASE)
+    # commit_districts(parsed_districts, DATABASE)
 
 
 if __name__ == "__main__":
-
     main()
-
