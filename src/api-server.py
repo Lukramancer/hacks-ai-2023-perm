@@ -45,5 +45,11 @@ def get_districts():
     return jsonify(db_session.query(District).all())
 
 
+@app.get("/get-events-types")
+def get_events_types():
+    events_types = set[str](map(lambda query_result_row: query_result_row[0], db_session.query(Event.event).distinct().all()))
+    return jsonify(list(events_types))
+
+
 if __name__ == "__main__":
     app.run()
