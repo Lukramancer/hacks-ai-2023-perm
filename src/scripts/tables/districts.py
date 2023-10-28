@@ -49,9 +49,11 @@ def commit_districts(districts: list[District], db_connection_str: str, recreate
     db_session.commit()
 
 
-def main(db_connection_str: str):
+def main():
     from csv import reader as csv_reader
     from requests import get
+
+    from env import DATABASE
 
     possible_districts = get_possible_districts()
     if possible_districts is None:
@@ -80,11 +82,10 @@ def main(db_connection_str: str):
                                              raw_meteorology_station_name=raw_meteorology_station_name,
                                              meteorology_station_name=meteorology_station_name, geometry=geometry))
 
-    commit_districts(parsed_districts, db_connection_str)
+    commit_districts(parsed_districts, DATABASE)
 
 
 if __name__ == "__main__":
-    from env import DATABASE
 
-    main(DATABASE)
+    main()
 

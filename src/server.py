@@ -3,10 +3,9 @@ from flask import Flask, request, jsonify
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from src.tables import Event, Base, District
-from src.scripts.prediction.danger_prediction import get_prediction
 
 from env import DATABASE
 
@@ -50,6 +49,18 @@ def get_districts():
 def get_events_types():
     events_types = set[str](map(lambda query_result_row: query_result_row[0], db_session.query(Event.event).distinct().all()))
     return jsonify(list(events_types))
+
+
+@app.get("/get-latest-dates")
+def get_latest_dates():
+    days_amount = 10
+
+    result = list[str]()
+    latest_date: datetime = db_session.query(func.max(Event.time)).first()[0]
+    for _ in range(days_amount):
+        result.append(latest_date.strftime("%d.%m.%Y"))
+        latest_date -= timedelta(days=1)
+    return jsonify(result)
 
 
 if __name__ == "__main__":

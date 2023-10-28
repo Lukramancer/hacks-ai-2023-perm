@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
-
 import pandas as pd
 import numpy as np
-import os
 
 from catboost import CatBoostClassifier
 from src.scripts.correct_data.correct_MO_to_stations import correct_MO_to_stations
+
+from src.tables import Event
+
+from datetime import datetime
 
 from env import DATABASE
 
@@ -129,7 +131,7 @@ def get_prediction():
 
         X = meteo_df.drop(columns=['Местное время', 'meteostation'])
         X = X[inf_columns]
-        clfs = [CatBoostClassifier().load_model(f"models/classificator{i}.cbm", format="cbm") for i in range(5)]
+        clfs = [CatBoostClassifier().load_model(f"src/models/classificator{i}.cbm", format="cbm") for i in range(5)]
         predict_matrix = np.array([clf.predict_proba(X) for clf in clfs]).mean(axis=0)
 
         probs.extend(predict_matrix.max(axis=1))
@@ -156,3 +158,25 @@ def edit_submit_df(submit_df: pd.DataFrame):
         result_df.append(selected_df)
 
     return pd.concat(result_df, ignore_index=True)
+
+
+def add_events_in_db():
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy import create_engine
+
+    engine = create_engine(DATABASE)
+    db_session_maker = sessionmaker(bind=engine)
+    db_session = db_session_maker()
+
+    Event.__table__.drop(engine)
+    Event.__table__.create(engine)
+
+    predictions_df = get_prediction()
+    predicted_events = list[Event]()
+    for event in predictions_df.values:
+        [datetime, _, probability, event_name, district] = event
+        # print(datetime, type(datetime))
+        predicted_events.append(Event(event=event_name, time=datetime, probability=probability, district=district))
+
+    db_session.add_all(predicted_events)
+    db_session.commit()
