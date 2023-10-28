@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 
+from flask_cors import CORS
+
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
@@ -9,7 +11,9 @@ from src.tables import Event, Base, District
 
 from env import DATABASE
 
+
 app = Flask(__name__)
+CORS(app)
 
 engine = create_engine(DATABASE)
 db_session_maker = sessionmaker(bind=engine)
