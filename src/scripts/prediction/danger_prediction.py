@@ -28,6 +28,7 @@ def get_prediction():
     weather_stats_df.replace('^\s+', '', regex=True, inplace=True)
     weather_stats_df.replace('\s+$', '', regex=True, inplace=True)
     weather_stats_df.meteostation = weather_stats_df.meteostation.str.replace("й", "й")  # ненавижу
+    weather_stats_df["Местное время"] = pd.to_datetime(weather_stats_df["Местное время"], format="%d.%m.%Y %H:%M")
 
     selected_columns = ['T', 'Td', 'P', 'Po', 'Pa', 'U', 'DD', 'Ff', 'ff10',
                         'ff3', 'N', 'WW', 'W1', 'W2', 'Tn', 'Tx', 'Cl', 'Nh', 'H', 'Cm',
@@ -115,6 +116,7 @@ def get_prediction():
     submit_df['meteostations'] = meteostations
     submit_df['probs'] = probs
     submit_df['labels'] = labels
+    # submit_df.to_csv("Aboba.csv", index=False)
 
     return edit_submit_df(submit_df)
 
