@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 
 from src.tables import Event, Base, District
+from src.scripts.prediction.danger_prediction import get_prediction
 
 from env import DATABASE
 
@@ -48,6 +49,12 @@ def get_districts():
 def get_events_types():
     events_types = set[str](map(lambda query_result_row: query_result_row[0], db_session.query(Event.event).distinct().all()))
     return jsonify(list(events_types))
+
+
+# @app.get("/debug-predict")
+# def get_danger_predict():
+#     get_prediction()
+#     return "1"
 
 
 if __name__ == "__main__":

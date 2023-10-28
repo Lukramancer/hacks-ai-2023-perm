@@ -7,6 +7,7 @@ import numpy as np
 import os
 
 from catboost import CatBoostClassifier
+from src.scripts.correct_data.correct_MO_to_stations import correct_MO_to_stations
 
 
 # # Load data
@@ -115,4 +116,17 @@ def get_prediction():
     submit_df['probs'] = probs
     submit_df['labels'] = labels
 
-    return submit_df
+    return edit_submit_df(submit_df)
+
+
+def edit_submit_df(submit_df: pd.DataFrame):
+    result_df = []
+    districts = correct_MO_to_stations(dict(pd.read_csv("../Данные/Данные по метеостанциям. Соответствие МО.csv")
+                                            .replace('\s+$', '', regex=True)
+                                            .replace('^\s+', '', regex=True).values))
+    for x, y in districts.items():
+        selected_df = submit_df[submit_df["meteostations"] == y].copy()
+        selected_df["district"] = x
+        result_df.append(selected_df)
+
+    return pd.concat(result_df, ignore_index=True)
