@@ -11,7 +11,6 @@ from env import DATABASE
 
 app = Flask(__name__)
 
-
 engine = create_engine(DATABASE)
 db_session_maker = sessionmaker(bind=engine)
 db_session = db_session_maker()

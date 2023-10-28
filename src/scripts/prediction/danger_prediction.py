@@ -4,6 +4,7 @@
 
 import pandas as pd
 import numpy as np
+import os
 
 from catboost import CatBoostClassifier
 
@@ -13,7 +14,7 @@ from catboost import CatBoostClassifier
 # загружаем данные и убираем лишние пробелы до и после слова
 
 def get_prediction():
-    respective_weather_df = pd.read_csv('Данные/Данные_по_метеостанциям_Соответствие_МО.csv')
+    respective_weather_df = pd.read_csv('../Данные/Данные по метеостанциям. Соответствие МО.csv')
     respective_weather_df.replace('^\s+', '', regex=True, inplace=True)
     respective_weather_df.replace('\s+$', '', regex=True, inplace=True)
 
@@ -22,7 +23,7 @@ def get_prediction():
     MO_to_weather_station = dict(respective_weather_df.values)
     MO_to_weather_station = {x: y.split()[1] for x, y in MO_to_weather_station.items()}
 
-    weather_stats_df = pd.read_csv("Данные/Данные по метеостанциям.csv", low_memory=False)
+    weather_stats_df = pd.read_csv("../Данные/Данные по метеостанциям.csv", low_memory=False)
     weather_stats_df.replace('^\s+', '', regex=True, inplace=True)
     weather_stats_df.replace('\s+$', '', regex=True, inplace=True)
     weather_stats_df.meteostation = weather_stats_df.meteostation.str.replace("й", "й")  # ненавижу
