@@ -47,8 +47,7 @@ def commit_districts(districts: list[District], db_connection_str: str, recreate
     db_session = db_session_maker()
 
     if recreate_table:
-        District.__table__.drop(engine)
-        District.__table__.create(engine)
+        db_session.query(District).delete()
 
     db_session.add_all(districts)
     db_session.commit()
