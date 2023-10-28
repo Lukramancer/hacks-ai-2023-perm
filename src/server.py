@@ -34,8 +34,17 @@ def get_events():
         return "Error: "
 
     result = dict[str, Event]()
+    day_events_amounts = dict[str, int]()
     for event in db_session.query(Event).filter((func.DATE(Event.time) == date) & (Event.event == type)).all():
-        result[event.district] = event
+        if event.district in result:
+            result[event.district].probability += event.probability
+            day_events_amounts[event.district] += 1
+        else:
+            result[event.district] = event
+            day_events_amounts[event.district] = 1
+
+    for district in result.keys():
+        result[district].probability /= day_events_amounts.get(district, 1)
 
     return jsonify(result)
 
