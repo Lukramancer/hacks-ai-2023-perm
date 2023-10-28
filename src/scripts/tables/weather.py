@@ -1,23 +1,29 @@
-import pandas as pd
-import sqlalchemy.types
+#!/usr/bin/env python3
 
-from env import DATABASE
+def main():
+    import pandas as pd
+    import sqlalchemy.types
 
-df = pd.read_csv("../../../Данные/Данные по метеостанциям.csv")
+    from env import DATABASE
 
-df["time"] = pd.to_datetime(df["Местное время"], format="%d.%m.%Y %H:%M")
-df = df.drop("Местное время", axis=1)
+    df = pd.read_csv("../../../Данные/Данные по метеостанциям.csv")
 
-df.info()
+    df["time"] = pd.to_datetime(df["Местное время"], format="%d.%m.%Y %H:%M")
+    df = df.drop("Местное время", axis=1)
 
-dtypes_dict = dict[str]()
-for float_column in df.select_dtypes(["float64"]).columns.values:
-    dtypes_dict[float_column] = sqlalchemy.types.DECIMAL
+    df.info()
+
+    dtypes_dict = dict[str]()
+    for float_column in df.select_dtypes(["float64"]).columns.values:
+        dtypes_dict[float_column] = sqlalchemy.types.DECIMAL
+
+    from sqlalchemy import create_engine
+    engine = create_engine(DATABASE)
+
+    print("importing to database")
+    df.to_sql("weather", engine, if_exists="replace", index=False, dtype=dtypes_dict)
+    print("done")
 
 
-from sqlalchemy import create_engine
-engine = create_engine(DATABASE)
-
-print("importing to database")
-df.to_sql("weather", engine, if_exists="replace", index=False, dtype=dtypes_dict)
-print("done")
+if __name__ == "__main__":
+    main()
