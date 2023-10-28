@@ -30,14 +30,15 @@ def get_events():
     except ValueError:
         return "Error: date is not correct"
 
-    types = request.args.get("types")
-    if types is not None:
-        types = types.split(',')
-        events = db_session.query(Event).filter((func.DATE(Event.time) == date) & Event.event.in_(types)).all()
-    else:
-        events = db_session.query(Event).filter(func.DATE(Event.time) == date).all()
+    type = request.args.get("type")
+    if type is None:
+        return "Error: "
 
-    return jsonify(events)
+    result = dict[str, Event]()
+    for event in db_session.query(Event).filter((func.DATE(Event.time) == date) & (Event.event == type)).all():
+        result[event.district] = event
+
+    return jsonify(result)
 
 
 @app.get("/get-districts")
@@ -49,12 +50,6 @@ def get_districts():
 def get_events_types():
     events_types = set[str](map(lambda query_result_row: query_result_row[0], db_session.query(Event.event).distinct().all()))
     return jsonify(list(events_types))
-
-
-# @app.get("/debug-predict")
-# def get_danger_predict():
-#     get_prediction()
-#     return "1"
 
 
 if __name__ == "__main__":
