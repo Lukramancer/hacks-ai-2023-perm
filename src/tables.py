@@ -22,8 +22,8 @@ class Event(Base):
     probability: float
     probability = sa.Column(sa.DECIMAL, nullable=False)
 
-    region: str
-    region = sa.Column(sa.VARCHAR, nullable=False)
+    district: str
+    district = sa.Column(sa.VARCHAR, nullable=False)
 
     description: str
     description = sa.Column(sa.Text)
@@ -41,6 +41,9 @@ class District(Base):
 
     meteorology_station_name: str
     meteorology_station_name = sa.Column(sa.VARCHAR, nullable=False)
+
+    raw_meteorology_station_name: str
+    raw_meteorology_station_name = sa.Column(sa.VARCHAR, nullable=False)
 
     geometry: dict
     geometry = sa.Column(sa.JSON)
