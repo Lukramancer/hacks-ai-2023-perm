@@ -87,7 +87,7 @@ def main():
                                              raw_meteorology_station_name=raw_meteorology_station_name,
                                              meteorology_station_name=meteorology_station_name, geometry=geometry))
 
-    # commit_districts(parsed_districts, DATABASE)
+    commit_districts(parsed_districts, DATABASE)
 
 
 if __name__ == "__main__":
